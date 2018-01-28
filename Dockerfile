@@ -20,8 +20,5 @@ ADD ./php/php.ini /usr/local/etc/php/conf.d/php.ini
 #inject wp configurator
 ADD ./www/wp-config.php /www/wp-config.php
 
-VOLUME /www/
-WORKDIR /www/
-
 EXPOSE 9000
 CMD ["php-fpm"]
