@@ -1,0 +1,20 @@
+FROM oleksiichernomaz/wordpress:4.9.2
+#compatible format with older dockerfiles
+RUN mkdir -p /wordpress.loc && mv /www/* /wordpress.loc && mv /wordpress.loc /www/wordpress.loc
+
+#here also you can inject a WP-content folder, so that it'gonna be build-in into the image,
+#alrernativelly, content foler can be distributes as assets image, depending on the your deployment approach and static size
+#COPY ./data/wp-content /www/wordpress.loc/wp-content
+
+#inject configs and set up permissions
+RUN chown -R www-data:www-data /www/
+COPY ./settings/nginx/ /settings/wordpress.loc/nginx/
+COPY ./settings/php/php.ini /usr/local/etc/php/conf.d/php.ini
+
+#define volumes
+VOLUME /settings/wordpress.loc
+VOLUME /www/wordpress.loc
+
+#working directory is project's root
+WORKDIR /www/wordpress.loc
+CMD ["php-fpm"]

@@ -1,59 +1,63 @@
 version: '2'
 services:
-  nginx:
-      image:            "${IMG_NGINX}"
-      container_name:   nginx
-      depends_on:
-          - wp-fpm
-      external_links:
-          - wp-fpm:wordpress-fpm
-      volumes:
-          - "./nginx/wordpress.conf:/etc/nginx/conf.d/wordpress.conf"
-          - "./nginx/nginx.conf:/etc/nginx/nginx.conf"
-          - "${PATH_LOGS}/nginx:/logs"
-      volumes_from:
-          - wp-fpm:ro
-      ports:
-          - "80:80"
-          - "443:443"
-  wp-db:
-      image:            "${IMG_MYSQL}"
-      container_name:   wp-db
-      hostname:         "${HOST_MYSQL}"
-      environment:
-          - "MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}"
-          - "MYSQL_DATABASE=${MYSQL_DATABASE}"
-          - "MYSQL_USER=${MYSQL_USER}"
-          - "MYSQL_PASSWORD=${MYSQL_PASSWORD}"
-      volumes:
-         - "./mysql/my.cnf:/etc/mysql/conf.d/my.cnf"
-         - "${PATH_MYSQL_DATA}:/var/lib/mysql"
-      ports:
-          - "3306:3306"
-  wp-fpm:
-      image:            "${IMG_WP}"
-      container_name:   wp-fpm
-      hostname:         wp-fpm
-      environment:
-          - "DB_NAME=${MYSQL_DATABASE}"
-          - "DB_USER=${MYSQL_USER}"
-          - "DB_PASSWORD=${MYSQL_PASSWORD}"
-          - "DB_HOST=${HOST_MYSQL}"
-          - "DB_CHARSET=utf8"
-          - "AUTH_KEY=${AUTH_KEY}"
-          - "SECURE_AUTH_KEY=${SECURE_AUTH_KEY}"
-          - "LOGGED_IN_KEY=${LOGGED_IN_KEY}"
-          - "NONCE_KEY=${NONCE_KEY}"
-          - "AUTH_SALT=${AUTH_SALT}"
-          - "SECURE_AUTH_SALT=${SECURE_AUTH_SALT}"
-          - "LOGGED_IN_SALT=${LOGGED_IN_SALT}"
-          - "NONCE_SALT=${NONCE_SALT}"
-          - "WP_DEBUG=${WP_DEBUG}"
-          - "WP_TABLE_PREFIX=${WP_TABLE_PREFIX}"
-      volumes:
-          - "./php/php.ini:/usr/local/etc/php/conf.d/php.ini"
-          - "${PATH_LOGS}/php/:/logs"
-      depends_on:
-          - wp-db
-      external_links:
-          - "wp-db:${HOST_MYSQL}"
+    nginx-wp:
+        image:            "${IMG_NGINX}"
+        container_name:   nginx-wp
+        depends_on:
+            - wp-app
+        external_links:
+            - wp-app:wordpress-app-fpm
+        volumes:
+            - "./settings/nginx/nginx.conf:/etc/nginx/nginx.conf:ro"
+            - "${PATH_LOGS}/nginx:/logs"
+        volumes_from:
+            - wp-app:ro
+        ports:
+            - "80:80"
+            - "443:443"
+    wp-db:
+        image:            "${IMG_MYSQL}"
+        container_name:   wp-db
+        hostname:         "${HOST_MYSQL}"
+        environment:
+            - "MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}"
+            - "MYSQL_DATABASE=${MYSQL_DATABASE}"
+            - "MYSQL_USER=${MYSQL_USER}"
+            - "MYSQL_PASSWORD=${MYSQL_PASSWORD}"
+        volumes:
+            - "./settings/mysql/my.cnf:/etc/mysql/conf.d/my.cnf"
+            - "${PATH_MYSQL_DATA}:/var/lib/mysql"
+        ports:
+             - "3306:3306"
+    wp-app:
+        image: "wp-app:latest"
+        build:
+            context:    ./
+            dockerfile: Dockerfile-wordpress
+        container_name:   wp-app
+        hostname:         wp-app
+        environment:
+            - "DB_NAME=${MYSQL_DATABASE}"
+            - "DB_USER=${MYSQL_USER}"
+            - "DB_PASSWORD=${MYSQL_PASSWORD}"
+            - "DB_HOST=${HOST_MYSQL}"
+            - "DB_CHARSET=utf8"
+            - "AUTH_KEY=${AUTH_KEY}"
+            - "SECURE_AUTH_KEY=${SECURE_AUTH_KEY}"
+            - "LOGGED_IN_KEY=${LOGGED_IN_KEY}"
+            - "NONCE_KEY=${NONCE_KEY}"
+            - "AUTH_SALT=${AUTH_SALT}"
+            - "SECURE_AUTH_SALT=${SECURE_AUTH_SALT}"
+            - "LOGGED_IN_SALT=${LOGGED_IN_SALT}"
+            - "NONCE_SALT=${NONCE_SALT}"
+            - "WP_DEBUG=${WP_DEBUG}"
+            - "WP_TABLE_PREFIX=${WP_TABLE_PREFIX}"
+        volumes:
+            - "${PATH_LOGS}/php/:/logs"
+            #note, you can define WP uploads directory as volume, which is tracked by git or any vcs ;)
+            #also, alternatively, you can plugins directory define as additional volume
+            - "./data/wp-content/uploads:/www/wordpress.loc/wp-content/uploads"
+        depends_on:
+            - wp-db
+        external_links:
+            - "wp-db:${HOST_MYSQL}"
