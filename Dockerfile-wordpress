@@ -10,6 +10,7 @@ RUN mkdir -p /wordpress.loc && mv /www/* /wordpress.loc && mv /wordpress.loc /ww
 RUN chown -R www-data:www-data /www/
 COPY ./settings/nginx/ /settings/wordpress.loc/nginx/
 COPY ./settings/php/php.ini /usr/local/etc/php/conf.d/php.ini
+COPY ./settings/php/php-fpm.conf /usr/local/etc/php-fpm.conf
 
 #define volumes
 VOLUME /settings/wordpress.loc

@@ -16,9 +16,10 @@ RUN export WP_VERSION=4.9.2 \
 && apk del \
     wget
 #inject default settings
-ADD ./settings/php/php.ini /usr/local/etc/php/conf.d/php.ini
+COPY ./settings/php/php.ini /usr/local/etc/php/conf.d/php.ini
+COPY ./settings/php/php-fpm.conf /usr/local/etc/php-fpm.conf
 #inject wp configurator
-ADD ./www/wp-config.php /www/wp-config.php
+COPY ./www/wp-config.php /www/wp-config.php
 
 EXPOSE 9000
 CMD ["php-fpm"]

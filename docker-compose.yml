@@ -26,9 +26,7 @@ services:
             - "MYSQL_PASSWORD=${MYSQL_PASSWORD}"
         volumes:
             - "./settings/mysql/my.cnf:/etc/mysql/conf.d/my.cnf"
-            - "${PATH_MYSQL_DATA}:/var/lib/mysql"
-        ports:
-             - "3306:3306"
+#            - "${PATH_MYSQL_DATA}:/var/lib/mysql"
     wp-app:
         image: "wp-app:latest"
         build:
@@ -57,6 +55,7 @@ services:
             #note, you can define WP uploads directory as volume, which is tracked by git or any vcs ;)
             #also, alternatively, you can plugins directory define as additional volume
             - "./data/wp-content/uploads:/www/wordpress.loc/wp-content/uploads"
+            - "./data/wp-content:/www/wordpress.loc/wp-content"
         depends_on:
             - wp-db
         external_links:
