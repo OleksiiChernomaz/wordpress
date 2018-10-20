@@ -1,4 +1,5 @@
-FROM oleksiichernomaz/wordpress:4.9.2
+ARG BASE_WP_IMG
+FROM ${BASE_WP_IMG}
 #compatible format with older dockerfiles
 RUN mkdir -p /wordpress.loc && mv /www/* /wordpress.loc && mv /wordpress.loc /www/wordpress.loc
 
@@ -8,14 +9,10 @@ RUN mkdir -p /wordpress.loc && mv /www/* /wordpress.loc && mv /wordpress.loc /ww
 
 #inject configs and set up permissions
 RUN chown -R www-data:www-data /www/
-COPY ./settings/nginx/ /settings/wordpress.loc/nginx/
-COPY ./settings/php/php.ini /usr/local/etc/php/conf.d/php.ini
-COPY ./settings/php/php-fpm.conf /usr/local/etc/php-fpm.conf
 
 #define volumes
-VOLUME /settings/wordpress.loc
 VOLUME /www/wordpress.loc
+WORKDIR /www/wordpress.loc
 
 #working directory is project's root
-WORKDIR /www/wordpress.loc
 CMD ["php-fpm"]

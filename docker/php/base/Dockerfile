@@ -1,7 +1,8 @@
-FROM oleksiichernomaz/php-fpm:7.2
+ARG BASE_IMG=oleksiichernomaz/php-fpm:7.2
+FROM $BASE_IMG
+ARG WP_VERSION=4.9.8
 
-RUN export WP_VERSION=4.9.2 \
-    && apk add --no-cache --upgrade \
+RUN apk add --no-cache --upgrade \
            ca-certificates \
            wget \
 #install wp
@@ -15,11 +16,13 @@ RUN export WP_VERSION=4.9.2 \
 #some cleanup
 && apk del \
     wget
+
 #inject default settings
-COPY ./settings/php/php.ini /usr/local/etc/php/conf.d/php.ini
-COPY ./settings/php/php-fpm.conf /usr/local/etc/php-fpm.conf
+COPY ./php.ini /usr/local/etc/php/conf.d/php.ini
+COPY ./php-fpm.conf /usr/local/etc/php-fpm.conf
 #inject wp configurator
 COPY ./www/wp-config.php /www/wp-config.php
 
+WORKDIR /www/
 EXPOSE 9000
 CMD ["php-fpm"]

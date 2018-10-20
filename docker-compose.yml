@@ -8,8 +8,8 @@ services:
         external_links:
             - wp-app:wordpress-app-fpm
         volumes:
-            - "./settings/nginx/nginx.conf:/etc/nginx/nginx.conf:ro"
-            - "${PATH_LOGS}/nginx:/logs"
+            - "./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro"
+            - "./docker/nginx/sites-enabled/wordpress.conf:/etc/nginx/conf.d/sites-enabled/wordpress.conf:ro"
         volumes_from:
             - wp-app:ro
         ports:
@@ -25,13 +25,15 @@ services:
             - "MYSQL_USER=${MYSQL_USER}"
             - "MYSQL_PASSWORD=${MYSQL_PASSWORD}"
         volumes:
-            - "./settings/mysql/my.cnf:/etc/mysql/conf.d/my.cnf"
-#            - "${PATH_MYSQL_DATA}:/var/lib/mysql"
+            - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+            - ${PATH_MYSQL_DATA}:/var/lib/mysql
     wp-app:
         image: "wp-app:latest"
         build:
-            context:    ./
-            dockerfile: Dockerfile-wordpress
+            context:    ./docker/php/app
+            dockerfile: Dockerfile
+            args:
+                BASE_WP_IMG: oleksiichernomaz/wordpress:${WP_VERSION}
         container_name:   wp-app
         hostname:         wp-app
         environment:
@@ -51,11 +53,23 @@ services:
             - "WP_DEBUG=${WP_DEBUG}"
             - "WP_TABLE_PREFIX=${WP_TABLE_PREFIX}"
         volumes:
-            - "${PATH_LOGS}/php/:/logs"
+            - ${PATH_LOGS}:/logs/
             #note, you can define WP uploads directory as volume, which is tracked by git or any vcs ;)
             #also, alternatively, you can plugins directory define as additional volume
-            - "./data/wp-content/uploads:/www/wordpress.loc/wp-content/uploads"
+            - ./data/wp-content/uploads:/www/wordpress.loc/wp-content/uploads
         depends_on:
+            - wp-base
             - wp-db
         external_links:
             - "wp-db:${HOST_MYSQL}"
+    #only used for building of base image, which you can pull from docker hub. When you copy docker-compose,
+    #you, do not need this section
+    wp-base:
+        image: "oleksiichernomaz/wordpress:${WP_VERSION}"
+        build:
+            context:    ./docker/php/base
+            dockerfile: Dockerfile
+            args:
+                WP_VERSION: ${WP_VERSION}
+                BASE_IMG: ${PHP_BASE_IMG}
+        container_name:   wp-base
