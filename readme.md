@@ -7,15 +7,22 @@
 # How to use (checklist)
 
 ### 1. Copy or fork the project, use it as a template:
-You can use the whole project as a template. Just copy-paste it or fork and remove `Dockerfile`. 
-Adjust all the configs according to your needs. 
+You can use the whole project as a template. Adjust all the configs according to your needs. 
 
 Many things are extracted into variables, so that
 you just have to define variables. Configs can be also easily injected during instance creation.
 
+> ##Note
+>
+> if you use provided base image, then it's enough to use docker-compose file content and put own configs
+
 ### 2. Create own wordpress application
-Example of the `Dockerfile` for your wordpress application you can find in the `Dockerfile-wordpress`, how to use it
-you can find out in the `docker-compose.yml`: search fro the `wp-app` application definition.
+Example of the `Dockerfile` for your wordpress application you can find in the `./docker/php/app/Dockerfile.dist`.
+```bash
+cp ./docker/php/app/Dockerfile.dist ./docker/php/app/Dockerfile
+```
+Adjust it for your needs. 
+How to use it you can find out in the `docker-compose.yml`: search for the `wp-app` application definition.
 
 ### 3. Set up environment for your WP application: 
 Variables are extracted into `.env` file. Example of this file you can find in the `.env.dist`.
@@ -86,6 +93,14 @@ Whatever way you would choose, you need to track files with any `cvs` (for examp
 # To make a test build on your local machine:
 
 ```
-docker build --compress --pull --force-rm --tag oleksiichernomaz/wordpress:4.9.2 .
-docker run -it oleksiichernomaz/wordpress:4.9.2 sh
+docker-compose build wp-base
+
+#or less recommended
+cd ./docker/php/base/
+docker build \
+    --build-arg WP_VERSION=4.6.8 \
+    --build-arg BASE_IMG=oleksiichernomaz/php-fpm:7.2 \
+    --compress --pull --force-rm \
+    --tag oleksiichernomaz/wordpress:4.9.8 .
+docker run -it oleksiichernomaz/wordpress:4.9.8 php -v
 ```
